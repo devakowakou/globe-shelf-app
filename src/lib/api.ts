@@ -28,6 +28,7 @@ export async function fetchBookshelves(params: { limit: number; offset: number }
       const formsCount = data.forms?.length ?? 0;
       return { ...shelf, formsCount };
     } catch (e) {
+      // If fetching details fails for one shelf, we still want to show the shelf with 0 books.
       return { ...shelf, formsCount: 0 };
     }
   }));
@@ -47,27 +48,19 @@ export async function fetchShelfDetails(shelfId: string): Promise<Bookshelf | un
     };
 }
 
-async function fetchBookDetails(form: any): Promise<Book> {
-  return {
-    id: form.id,
-    title: form.title,
-    authors: form.authors || [],
-    coverUrl: form.cover?.url || (form.medias?.length > 0 ? form.medias[0].cover.url : undefined),
-    price: form.price?.amount > 0 ? form.price : undefined,
-    averageRating: form.statistics?.rating?.average,
-  };
-}
 
 export async function fetchBooksForShelf(params: {
   shelfId: string;
   limit: number;
   offset: number;
 }): Promise<{ books: Book[]; total: number }> {
+  // Fetch the shelf data directly with its forms expanded
   const shelfData = await apiFetch(`${API_ROOT}/shelves/${params.shelfId}?expand=forms`);
 
   const allForms = shelfData.forms || [];
   const total = allForms.length;
 
+  // Manual pagination on the forms array
   const paginatedForms = allForms.slice(params.offset, params.offset + params.limit);
 
   if (paginatedForms.length === 0) {

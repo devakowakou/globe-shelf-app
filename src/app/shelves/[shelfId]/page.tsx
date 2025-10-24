@@ -39,6 +39,7 @@ export default function ShelfPage({
       <Suspense key={currentPage + query} fallback={<BookGridSkeleton />}>
         <BooksDataFetcher 
           booksPromise={booksPromise}
+          currentPage={currentPage}
         />
       </Suspense>
     </div>
@@ -111,16 +112,13 @@ async function ShelfSummary({ summaryPromise }: { summaryPromise: Promise<string
 }
 
 
-async function BooksDataFetcher({ booksPromise }: {
+async function BooksDataFetcher({ booksPromise, currentPage }: {
   booksPromise: Promise<{ books: any[], total: number }>;
+  currentPage: number;
 }) {
   try {
     const { books, total } = await booksPromise;
     const totalPages = Math.ceil(total / BOOKS_PER_PAGE);
-    
-    // This is not ideal as we lose the ability to paginate on this page with this design.
-    // The fetch happens at the top level component.
-    const currentPage = 1;
 
     return <BookGrid initialBooks={books} currentPage={currentPage} totalPages={totalPages} />;
   } catch (error) {

@@ -1,10 +1,16 @@
+
 import type { Book, Bookshelf } from "./definitions";
 
 const API_ROOT = "https://api.glose.com";
 const USER_ID = "5a8411b53ed02c04187ff02a";
 
 async function apiFetch(url: string) {
-  const res = await fetch(url, { cache: 'no-store' });
+  const res = await fetch(url, {
+    headers: {
+      'Accept': 'application/json',
+    },
+    cache: 'no-store' 
+  });
   if (!res.ok) {
     throw new Error(`API call to ${url} failed: ${res.statusText}`);
   }
@@ -40,7 +46,6 @@ export async function fetchBooksForShelf(params: {
   limit: number;
   offset: number;
 }): Promise<{ books: Book[]; total: number }> {
-  // Correctly fetch the response which contains a 'forms' array of book IDs
   const shelfFormsResponse = await apiFetch(`${API_ROOT}/shelves/${params.shelfId}/forms?limit=1000`);
   const allFormIds: string[] = Array.isArray(shelfFormsResponse?.forms) ? shelfFormsResponse.forms : [];
   const total = allFormIds.length;
@@ -51,7 +56,6 @@ export async function fetchBooksForShelf(params: {
     return { books: [], total };
   }
 
-  // Fetch details for the paginated book IDs
   const bookPromises = paginatedIds.map((id: string) => fetchBookDetails(id));
   const books = await Promise.all(bookPromises);
 

@@ -1,12 +1,30 @@
 import Image from 'next/image';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import type { Book } from '@/lib/definitions';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { Star } from 'lucide-react';
 
 const bookCoverPlaceholder = PlaceHolderImages.find(p => p.id === 'book-cover-placeholder');
 
 export function BookCard({ book }: { book: Book }) {
   const authors = book.authors?.map(author => author.name).join(', ');
+
+  const renderStars = () => {
+    if (!book.averageRating) return null;
+    const rating = Math.round(book.averageRating);
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <Star
+          key={i}
+          className={`w-4 h-4 ${
+            i <= rating ? 'text-amber-400 fill-amber-400' : 'text-gray-300'
+          }`}
+        />
+      );
+    }
+    return <div className="flex items-center gap-1">{stars}</div>;
+  };
 
   return (
     <div className="group relative flex flex-col h-full">
@@ -22,9 +40,10 @@ export function BookCard({ book }: { book: Book }) {
           />
         </div>
       </Card>
-      <div className="pt-3">
+      <div className="pt-3 space-y-1">
         <h3 className="text-base font-semibold leading-tight line-clamp-2" title={book.title}>{book.title}</h3>
         {authors && <p className="text-sm text-muted-foreground truncate" title={authors}>{authors}</p>}
+        {renderStars()}
       </div>
     </div>
   );

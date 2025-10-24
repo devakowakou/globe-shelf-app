@@ -3,21 +3,12 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
-export const ShelfSummaryInputSchema = z.object({
+const ShelfSummaryInputSchema = z.object({
   shelfTitle: z.string().describe('The title of the bookshelf.'),
   bookTitles: z.array(z.string()).describe('A list of book titles from the shelf.'),
 });
 
 export type ShelfSummaryInput = z.infer<typeof ShelfSummaryInputSchema>;
-
-export async function generateShelfSummary(input: ShelfSummaryInput): Promise<string> {
-  if (!input.shelfTitle || input.bookTitles.length === 0) {
-    return 'Explore this collection of books.';
-  }
-
-  const result = await shelfSummaryFlow(input);
-  return result;
-}
 
 const shelfSummaryFlow = ai.defineFlow(
   {
@@ -42,3 +33,13 @@ const shelfSummaryFlow = ai.defineFlow(
     return output || `Discover a collection of books titled "${input.shelfTitle}".`;
   }
 );
+
+
+export async function generateShelfSummary(input: ShelfSummaryInput): Promise<string> {
+  if (!input.shelfTitle || input.bookTitles.length === 0) {
+    return 'Explore this collection of books.';
+  }
+
+  const result = await shelfSummaryFlow(input);
+  return result;
+}

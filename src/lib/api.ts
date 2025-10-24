@@ -40,8 +40,9 @@ export async function fetchBooksForShelf(params: {
   limit: number;
   offset: number;
 }): Promise<{ books: Book[]; total: number }> {
-  const allFormIdsResponse = await apiFetch(`${API_ROOT}/shelves/${params.shelfId}/forms`);
-  const allFormIds = Array.isArray(allFormIdsResponse?.forms) ? allFormIdsResponse.forms : [];
+  // Correctly fetch the response which contains a 'forms' array of book IDs
+  const shelfFormsResponse = await apiFetch(`${API_ROOT}/shelves/${params.shelfId}/forms?limit=1000`);
+  const allFormIds: string[] = Array.isArray(shelfFormsResponse?.forms) ? shelfFormsResponse.forms : [];
   const total = allFormIds.length;
 
   const paginatedIds = allFormIds.slice(params.offset, params.offset + params.limit);
@@ -50,6 +51,7 @@ export async function fetchBooksForShelf(params: {
     return { books: [], total };
   }
 
+  // Fetch details for the paginated book IDs
   const bookPromises = paginatedIds.map((id: string) => fetchBookDetails(id));
   const books = await Promise.all(bookPromises);
 

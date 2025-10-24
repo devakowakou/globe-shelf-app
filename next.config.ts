@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [
+      // Placeholders
       {
         protocol: 'https',
         hostname: 'placehold.co',
@@ -25,6 +26,32 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'picsum.photos',
+        port: '',
+        pathname: '/**',
+      },
+      // ✅ API Glose - Images de couvertures de livres
+      {
+        protocol: 'https',
+        hostname: '*.glose.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'glose.com',
+        port: '',
+        pathname: '/**',
+      },
+      // Couvertures de livres (sources communes)
+      {
+        protocol: 'https',
+        hostname: '*.cloudfront.net',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.amazonaws.com',
         port: '',
         pathname: '/**',
       },

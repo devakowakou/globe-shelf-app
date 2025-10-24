@@ -10,6 +10,10 @@
 !.yarn/releases
 !.yarn/versions
 
+# pnpm
+pnpm-debug.log*
+.pnpm-store/
+
 # testing
 /coverage
 
@@ -37,9 +41,24 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# genkit AI
 .genkit/*
-.env*
 
-# firebase
-firebase-debug.log
-firestore-debug.log
+# environment variables
+.env*
+!.env.example
+
+# Firebase (removed - not used)
+# firebase-debug.log
+# firestore-debug.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

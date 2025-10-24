@@ -7,8 +7,9 @@ import { Terminal } from "lucide-react";
 
 const SHELVES_PER_PAGE = 10;
 
-export default function Home({ searchParams }: { searchParams?: { page?: string } }) {
-  const currentPage = Number(searchParams?.page) || 1;
+export default async function Home({ searchParams }: { searchParams?: Promise<{ page?: string }> }) {
+  const params = searchParams ? await searchParams : {};
+  const currentPage = Number(params?.page) || 1;
 
   return (
     <div className="space-y-8">

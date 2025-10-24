@@ -3,25 +3,25 @@ import { fetchBooksForShelf, fetchShelfDetails } from '@/lib/api';
 import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
-import { ChevronLeft, Terminal } from 'lucide-react';
+import { ChevronLeft, Terminal, BookOpen } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { generateShelfSummary } from '@/ai/flows/shelf-summary-flow';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const BOOKS_PER_PAGE = 12;
 const bookCoverPlaceholder = PlaceHolderImages.find(p => p.id === 'book-cover-placeholder');
 
-export default function ShelfPage({
+export default async function ShelfPage({
   params,
   searchParams,
 }: {
-  params: { shelfId: string };
-  searchParams?: { page?: string; query?: string };
+  params: Promise<{ shelfId: string }>;
+  searchParams?: Promise<{ page?: string; query?: string }>;
 }) {
-  const shelfId = params.shelfId;
-  const currentPage = Number(searchParams?.page) || 1;
-  const query = searchParams?.query || '';
+  const { shelfId } = await params;
+  const search = searchParams ? await searchParams : {};
+  const currentPage = Number(search?.page) || 1;
+  const query = search?.query || '';
   
   const shelfDetailsPromise = fetchShelfDetails(shelfId);
   const booksPromise = fetchBooksForShelf({
@@ -64,13 +64,16 @@ function ShelfHeaderSkeleton() {
 
 async function ShelfHeader({ shelfDetailsPromise, booksPromise }: { shelfDetailsPromise: Promise<any>, booksPromise: Promise<any> }) {
   const [shelf, { books }] = await Promise.all([shelfDetailsPromise, booksPromise]);
-  const bookTitles = books.map((b: any) => b.title).slice(0, 5); // Use first 5 book titles for summary
-  const summaryPromise = generateShelfSummary({ shelfTitle: shelf?.title, bookTitles });
-
+  
   const heroImage = books[0]?.coverUrl || bookCoverPlaceholder?.imageUrl;
+  
+  // Générer un résumé simple basé sur le nombre de livres
+  const summary = shelf?.formsCount 
+    ? `Découvrez une collection de ${shelf.formsCount} livres soigneusement sélectionnés. Parcourez la bibliothèque et trouvez votre prochaine lecture.`
+    : 'Explorez cette collection de livres.';
 
   return (
-    <div className="relative overflow-hidden rounded-lg bg-secondary/50 border p-8 md:p-12 min-h-[300px] flex flex-col justify-between items-start">
+    <div className="relative overflow-hidden rounded-xl bg-secondary/50 border shadow-2xl p-8 md:p-12 min-h-[400px] flex flex-col justify-between items-start">
       <div className="absolute inset-0 w-full h-full">
         {heroImage && (
           <Image
@@ -82,35 +85,30 @@ async function ShelfHeader({ shelfDetailsPromise, booksPromise }: { shelfDetails
             data-ai-hint={!books[0]?.coverUrl ? bookCoverPlaceholder?.imageHint : 'book collection'}
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
-        <div className="absolute inset-0 bg-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-background/70" />
+        <div className="absolute inset-0 bg-black/40" />
       </div>
-      <div className="relative z-10 text-white">
-        <Link href="/?page=1" className="flex items-center gap-2 text-white/80 hover:text-white mb-4 text-sm font-medium">
-          <ChevronLeft className="h-4 w-4" />
+      <div className="relative z-10 text-white w-full">
+        <Link href="/?page=1" className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 text-sm font-medium transition-colors group">
+          <ChevronLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
           Back to Bookshelves
         </Link>
-        <h1 className="text-3xl md:text-5xl font-bold font-headline text-shadow-lg" style={{textShadow: '2px 2px 8px rgba(0,0,0,0.7)'}}>{shelf?.title || 'Shelf'}</h1>
+        <div className="flex items-center gap-3 mb-2">
+          <BookOpen className="h-8 w-8 text-primary" />
+          <h1 className="text-4xl md:text-6xl font-bold font-headline drop-shadow-2xl">{shelf?.title || 'Shelf'}</h1>
+        </div>
         {shelf?.formsCount && (
-            <p className="text-white/90 mt-2 text-shadow-sm" style={{textShadow: '1px 1px 4px rgba(0,0,0,0.7)'}}>
+            <p className="text-white/90 mt-3 text-lg drop-shadow-lg">
             {shelf.formsCount} books in this collection
             </p>
         )}
       </div>
-      <div className="relative z-10 mt-4 max-w-4xl">
-        <Suspense fallback={<Skeleton className="h-5 w-full" />}>
-            <ShelfSummary summaryPromise={summaryPromise} />
-        </Suspense>
+      <div className="relative z-10 mt-6 max-w-3xl">
+        <p className="text-white/95 text-base md:text-lg leading-relaxed drop-shadow-lg">{summary}</p>
       </div>
     </div>
   );
 }
-
-async function ShelfSummary({ summaryPromise }: { summaryPromise: Promise<string> }) {
-    const summary = await summaryPromise;
-    return <p className="text-white/90 text-shadow-sm text-sm md:text-base" style={{textShadow: '1px 1px 4px rgba(0,0,0,0.7)'}}>{summary}</p>
-}
-
 
 async function BooksDataFetcher({ booksPromise, currentPage }: {
   booksPromise: Promise<{ books: any[], total: number }>;

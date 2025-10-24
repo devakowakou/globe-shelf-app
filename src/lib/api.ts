@@ -22,13 +22,12 @@ async function apiFetch(url: string) {
 export async function fetchBookshelves(params: { limit: number; offset: number }): Promise<{ shelves: Bookshelf[]; total: number }> {
   const allShelves: Bookshelf[] = await apiFetch(`${API_ROOT}/users/${USER_ID}/shelves`);
   
-  // Manually add formsCount since the /shelves endpoint doesn't provide it directly
   const shelvesWithCounts = await Promise.all(allShelves.map(async (shelf) => {
     try {
-      const forms: string[] = await apiFetch(`${API_ROOT}/shelves/${shelf.id}/forms?limit=1000`);
-      return { ...shelf, formsCount: forms.length };
+      const data = await apiFetch(`${API_ROOT}/shelves/${shelf.id}?expand=forms`);
+      const formsCount = data.forms?.length ?? 0;
+      return { ...shelf, formsCount };
     } catch (e) {
-      // If a shelf is empty or fails, assume 0 books.
       return { ...shelf, formsCount: 0 };
     }
   }));
@@ -39,20 +38,16 @@ export async function fetchBookshelves(params: { limit: number; offset: number }
 }
 
 export async function fetchShelfDetails(shelfId: string): Promise<Bookshelf | undefined> {
-    const allShelves: Bookshelf[] = await apiFetch(`${API_ROOT}/users/${USER_ID}/shelves`);
-    const shelf = allShelves.find((shelf) => shelf.id === shelfId);
-    if (!shelf) return undefined;
+    const shelfData = await apiFetch(`${API_ROOT}/shelves/${shelfId}?expand=forms`);
+    if (!shelfData) return undefined;
 
-    try {
-        const forms: string[] = await apiFetch(`${API_ROOT}/shelves/${shelf.id}/forms?limit=1000`);
-        return { ...shelf, formsCount: forms.length };
-    } catch (e) {
-        return { ...shelf, formsCount: 0 };
-    }
+    return {
+        ...shelfData,
+        formsCount: shelfData.forms?.length ?? 0,
+    };
 }
 
-async function fetchBookDetails(formId: string): Promise<Book> {
-  const form = await apiFetch(`${API_ROOT}/forms/${formId}`);
+async function fetchBookDetails(form: any): Promise<Book> {
   return {
     id: form.id,
     title: form.title,
@@ -68,17 +63,25 @@ export async function fetchBooksForShelf(params: {
   limit: number;
   offset: number;
 }): Promise<{ books: Book[]; total: number }> {
-  const allFormIds: string[] = await apiFetch(`${API_ROOT}/shelves/${params.shelfId}/forms?limit=1000`);
-  const total = allFormIds.length;
+  const shelfData = await apiFetch(`${API_ROOT}/shelves/${params.shelfId}?expand=forms`);
 
-  const paginatedIds = allFormIds.slice(params.offset, params.offset + params.limit);
+  const allForms = shelfData.forms || [];
+  const total = allForms.length;
 
-  if (paginatedIds.length === 0) {
+  const paginatedForms = allForms.slice(params.offset, params.offset + params.limit);
+
+  if (paginatedForms.length === 0) {
     return { books: [], total };
   }
-
-  const bookPromises = paginatedIds.map((id: string) => fetchBookDetails(id));
-  const books = await Promise.all(bookPromises);
+  
+  const books: Book[] = paginatedForms.map((form: any) => ({
+    id: form.id,
+    title: form.title,
+    authors: form.authors || [],
+    coverUrl: form.cover?.url || (form.medias?.[0]?.cover?.url ?? undefined),
+    price: form.price?.amount > 0 ? form.price : undefined,
+    averageRating: form.statistics?.rating?.average,
+  }));
 
   return { books, total };
 }

@@ -1,7 +1,6 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -10,7 +9,6 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [
-      // Placeholders
       {
         protocol: 'https',
         hostname: 'placehold.co',
@@ -29,7 +27,6 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-      // ✅ API Glose - Images de couvertures de livres
       {
         protocol: 'https',
         hostname: '*.glose.com',
@@ -42,7 +39,6 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-      // Couvertures de livres (sources communes)
       {
         protocol: 'https',
         hostname: '*.cloudfront.net',
@@ -54,6 +50,12 @@ const nextConfig: NextConfig = {
         hostname: '*.amazonaws.com',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'storage.googleapis.com',
+        port: '',
+        pathname: '/s4-bucket/**',
       },
     ],
   },

@@ -43,7 +43,14 @@ export function BookCard({ book }: { book: Book }) {
       <div className="pt-3 space-y-1">
         <h3 className="text-base font-semibold leading-tight line-clamp-2" title={book.title}>{book.title}</h3>
         {authors && <p className="text-sm text-muted-foreground truncate" title={authors}>{authors}</p>}
-        {renderStars()}
+        <div className="flex items-center justify-between gap-2">
+          {renderStars()}
+          {book.price && (
+            <p className="text-sm font-bold text-primary">
+              {book.price.amount.toFixed(2)} {book.price.currency}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

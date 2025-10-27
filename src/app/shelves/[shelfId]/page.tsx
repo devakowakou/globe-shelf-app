@@ -67,7 +67,6 @@ async function ShelfHeader({ shelfDetailsPromise, booksPromise }: { shelfDetails
   
   const heroImage = books[0]?.coverUrl || bookCoverPlaceholder?.imageUrl;
   
-  // Générer un résumé simple basé sur le nombre de livres
   const summary = shelf?.formsCount 
     ? `Découvrez une collection de ${shelf.formsCount} livres soigneusement sélectionnés. Parcourez la bibliothèque et trouvez votre prochaine lecture.`
     : 'Explorez cette collection de livres.';

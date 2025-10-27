@@ -30,7 +30,6 @@ export function BookGrid({ initialBooks, currentPage, totalPages, shelfId }: Boo
       return;
     }
 
-    // Recherche locale sur la page actuelle
     startTransition(() => {
       const filtered = initialBooks.filter(book =>
         book.title.toLowerCase().includes(term.toLowerCase()) ||

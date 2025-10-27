@@ -3,7 +3,7 @@
 import type { Bookshelf } from '@/lib/definitions';
 import { BookshelfItem } from './bookshelf-item';
 import { PaginationComponent } from './pagination';
-import { Card } from './ui/card';
+import { EmptyState } from './empty-state';
 
 interface BookshelfListProps {
   shelves: Bookshelf[];
@@ -14,11 +14,11 @@ interface BookshelfListProps {
 export function BookshelfList({ shelves, currentPage, totalPages }: BookshelfListProps) {
   if (shelves.length === 0) {
     return (
-        <Card className="text-center py-16">
-            <h3 className="text-xl font-semibold">No bookshelves found</h3>
-            <p className="text-muted-foreground mt-2">Could not retrieve any bookshelves at this time.</p>
-        </Card>
-    )
+      <EmptyState 
+        title="No bookshelves found"
+        description="Could not retrieve any bookshelves at this time."
+      />
+    );
   }
   
   return (

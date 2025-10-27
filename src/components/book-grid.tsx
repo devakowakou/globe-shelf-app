@@ -1,13 +1,11 @@
 'use client';
 
-import { useState, useMemo, useTransition, useEffect } from 'react';
 import type { Book } from '@/lib/definitions';
-import { BookCard } from './book-card';
 import { PaginationComponent } from './pagination';
-import { SearchInput } from './search-input';
-import { Card } from './ui/card';
-import { Badge } from './ui/badge';
-import { X } from 'lucide-react';
+import { SearchBar } from './search-bar';
+import { BooksDisplay } from './books-display';
+import { EmptyState } from './empty-state';
+import { useBookSearch } from '@/hooks/use-book-search';
 
 interface BookGridProps {
   initialBooks: Book[];
@@ -16,81 +14,41 @@ interface BookGridProps {
   shelfId?: string;
 }
 
-export function BookGrid({ initialBooks, currentPage, totalPages, shelfId }: BookGridProps) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isPending, startTransition] = useTransition();
-  const [searchResults, setSearchResults] = useState<Book[] | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
+export function BookGrid({ initialBooks, currentPage, totalPages }: BookGridProps) {
+  const {
+    searchTerm,
+    booksToDisplay,
+    isFiltered,
+    handleSearch,
+    clearSearch,
+  } = useBookSearch(initialBooks);
 
-  const handleSearch = async (term: string) => {
-    setSearchTerm(term);
-    
-    if (!term.trim()) {
-      setSearchResults(null);
-      return;
-    }
-
-    startTransition(() => {
-      const filtered = initialBooks.filter(book =>
-        book.title.toLowerCase().includes(term.toLowerCase()) ||
-        book.authors.some(author => author.name.toLowerCase().includes(term.toLowerCase()))
-      );
-      setSearchResults(filtered);
-    });
-  };
-
-  const handleClearSearch = () => {
-    setSearchTerm('');
-    setSearchResults(null);
-  };
-
-  const booksToDisplay = searchResults !== null ? searchResults : initialBooks;
-  const isFiltered = searchTerm.trim() !== '';
+  const hasBooks = booksToDisplay.length > 0;
+  const emptyDescription = isFiltered 
+    ? `No books match "${searchTerm}". Try adjusting your search or clear the filter.`
+    : 'No books available on this page.';
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-        <SearchInput 
-          onSearch={handleSearch}
-          placeholder="Search by title or author..."
-          initialValue={searchTerm}
-        />
-        {isFiltered && (
-          <Badge 
-            variant="secondary" 
-            className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground transition-colors"
-            onClick={handleClearSearch}
-          >
-            Filtered: {booksToDisplay.length} result{booksToDisplay.length !== 1 ? 's' : ''}
-            <X className="ml-2 h-3 w-3" />
-          </Badge>
-        )}
-      </div>
+      <SearchBar 
+        searchTerm={searchTerm}
+        onSearch={handleSearch}
+        onClear={clearSearch}
+        resultsCount={booksToDisplay.length}
+        isFiltered={isFiltered}
+      />
       
-      {booksToDisplay.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
-          {booksToDisplay.map(book => (
-            <BookCard key={book.id} book={book} />
-          ))}
-        </div>
+      {hasBooks ? (
+        <BooksDisplay books={booksToDisplay} />
       ) : (
-        <Card className="text-center py-16">
-          <h3 className="text-xl font-semibold">No books found</h3>
-          <p className="text-muted-foreground mt-2">
-            {isFiltered 
-              ? `No books match "${searchTerm}". Try adjusting your search or clear the filter.`
-              : 'No books available on this page.'
-            }
-          </p>
-          {isFiltered && (
-            <button
-              onClick={handleClearSearch}
-              className="mt-4 text-primary hover:underline"
-            >
-              Clear search filter
-            </button>
-          )}
-        </Card>
+        <EmptyState 
+          title="No books found"
+          description={emptyDescription}
+          action={isFiltered ? {
+            label: 'Clear search filter',
+            onClick: clearSearch
+          } : undefined}
+        />
       )}
       
       {totalPages > 1 && !isFiltered && (

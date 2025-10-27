@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import type { Book } from '@/lib/definitions';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Star } from 'lucide-react';
+import { shimmer, toBase64 } from '@/lib/image-placeholder';
 
 const bookCoverPlaceholder = PlaceHolderImages.find(p => p.id === 'book-cover-placeholder');
 
@@ -34,6 +35,8 @@ export function BookCard({ book }: { book: Book }) {
             src={book.coverUrl || bookCoverPlaceholder?.imageUrl || ''}
             alt={`Cover of ${book.title}`}
             fill
+            placeholder="blur"
+            blurDataURL={`data:image/svg+xml;base64,${toBase64(shimmer(400, 600))}`}
             className="object-cover transition-transform duration-300 group-hover:scale-105"
             data-ai-hint={!book.coverUrl ? bookCoverPlaceholder?.imageHint : undefined}
             sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"

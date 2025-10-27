@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Header } from '@/components/header';
 import { Toaster } from '@/components/ui/toaster';
+import { Providers } from '@/components/providers';
 
 export const metadata: Metadata = {
   title: 'Glose Shelf Explorer',
@@ -24,13 +25,15 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased bg-background text-foreground">
-        <div className="flex flex-col min-h-screen">
-          <Header />
-          <main className="flex-grow container mx-auto p-4 sm:p-6 md:p-8">
-            {children}
-          </main>
-        </div>
-        <Toaster />
+        <Providers>
+          <div className="flex flex-col min-h-screen">
+            <Header />
+            <main className="flex-grow container mx-auto p-4 sm:p-6 md:p-8">
+              {children}
+            </main>
+          </div>
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );

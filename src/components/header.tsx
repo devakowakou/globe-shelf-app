@@ -1,5 +1,6 @@
 import { BookOpen } from 'lucide-react';
 import Link from 'next/link';
+import { ThemeToggle } from './theme-toggle';
 
 export function Header() {
   return (
@@ -11,6 +12,7 @@ export function Header() {
             Glose Shelf Explorer
           </h1>
         </Link>
+        <ThemeToggle />
       </div>
     </header>
   );
